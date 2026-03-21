@@ -4,6 +4,8 @@ import (
 	"crypto/md5"
 	"crypto/sha256"
 	"fmt"
+	"hash"
+	"io"
 	"os"
 
 	"github.com/yalue/elf_reader"
@@ -51,10 +53,13 @@ func getSectionHeaderByName(path string, section string) (elf_reader.ELFSectionH
 	return nil, fmt.Errorf("Section not found")
 }
 
-func CalculateMD5(path string) []byte {
+func hashEngine(path string) (hash.Hash, int64) {
+	var offset int64 = 0
+	hash := md5.New()
+
 	elf, err := readELF(path)
 	Check(err)
-	hash := md5.New()
+
 	var count uint16 = elf.GetSectionCount()
 	for i := range count {
 		// First section never has a name.
@@ -77,8 +82,40 @@ func CalculateMD5(path string) []byte {
 		// fmt.Printf("Section %d name: %s\n", i, name)
 		content, err := elf.GetSectionContent(i)
 		Check(err)
-		hash.Write(content)
+		bytesWritten, err := hash.Write(content)
 
+		offset += int64(bytesWritten)
+	}
+
+	return hash, offset
+}
+
+func CalculateMD5(path string) []byte {
+	// First read the start of the file and hash its contents.
+	hash, offset := hashEngine(path)
+
+	// Now read the rest of the file and hash its contents.
+	file, err := os.Open(path)
+	Check(err)
+
+	fileOffset, err := file.Seek(offset, io.SeekStart)
+	Check(err)
+
+	if fileOffset != int64(offset) {
+		Check(fmt.Errorf("No squashfs was appended"))
+	}
+
+	var buf []byte = make([]byte, 4096)
+	for {
+		size, err := file.Read(buf)
+		if size > 0 {
+			// Write only as many bytes as i need (don't
+			// also hash padding on last iteration)
+			hash.Write(buf[:size])
+		}
+		if err != nil {
+			break
+		}
 	}
 	finalHash := hash.Sum(nil)
 
