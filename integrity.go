@@ -69,9 +69,7 @@ func CalculateMD5(path string) []byte {
 			// This only exists in memory, and
 			// does not have contents which need to be hashed.
 			continue
-		case ".digest_md5":
-		case ".sha256_sig":
-		case ".sig_key":
+		case ".digest_md5", ".sha256_sig", ".sig_key":
 			// Skip them entirely as if they are not even here.
 			continue
 		}
