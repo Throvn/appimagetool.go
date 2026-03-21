@@ -10,7 +10,7 @@ import (
 
 const DOWNLOAD_URL = "https://github.com/AppImage/type2-runtime/releases/download/continuous"
 
-func downloadFromUrl(url string) string {
+func downloadFromUrl(url string) (string, error) {
 	tokens := strings.Split(url, "/")
 	fileName := tokens[len(tokens)-1]
 	fmt.Println("Downloading", url, "to", fileName)
@@ -18,33 +18,31 @@ func downloadFromUrl(url string) string {
 	output, err := os.Create(fileName)
 	if os.IsExist(err) {
 		// File already exists, skip downloading.
-		return fileName
+		return fileName, nil
 	} else if err != nil {
-		fmt.Println("Error while creating", fileName, "-", err)
-		return ""
+		return "", fmt.Errorf("File creation failed for %s - %v", fileName, err)
 	}
 	defer output.Close()
 
 	response, err := http.Get(url)
 	if err != nil {
-		fmt.Println("Error while downloading", url, "-", err)
-		return ""
+		return "", fmt.Errorf("Download failed for %s - %v", url, err)
 	}
 	defer response.Body.Close()
 
 	n, err := io.Copy(output, response.Body)
 	if err != nil {
-		fmt.Println("Error while downloading", url, "-", err)
-		return ""
+		return "", fmt.Errorf("Failed to write response to file for %s - %v", url, err)
 	}
 
 	fmt.Println(n, "bytes downloaded.")
-	return fileName
+	return fileName, nil
 }
 
 // Downloads the AppImage Engine from the official source
 // and returns the location of the downloaded file.
 func DownloadAppImageEngine(arch string) string {
-	dlLocation := downloadFromUrl(DOWNLOAD_URL + "/runtime-" + arch)
+	dlLocation, err := downloadFromUrl(DOWNLOAD_URL + "/runtime-" + arch)
+	Check(err)
 	return dlLocation
 }

@@ -4,7 +4,7 @@ A stripped down version of [the original appimagetool](https://github.com/AppIma
 
 This is going to be used in the Desktop.js CLI to allow for cross platform bundling of linux app versions.
 
-- [ ] Create a good CLI experience
+- [x] Create a good CLI experience
 - [ ] Make it a go package which is easy to be imported and work with
 - [x] Transformation of AppDir directory to squashfs filesystem
 - [x] Download of appimage engine according to specified platform

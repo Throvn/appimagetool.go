@@ -50,18 +50,14 @@ func safeFileBase(path string) string {
 }
 
 func createAppImage(path string, appImageEngine string) {
-
 	fileName := safeFileBase(path) + ".AppImage"
 
 	copyFile(appImageEngine, fileName)
 
-	location, err := os.Getwd()
-	ait.Check(err)
-
 	outFileName := safeFileBase(path) + ".squashfs"
 
 	os.Remove(outFileName)
-	ait.CreateSquashFSFromFolder(filepath.Join(location, path), outFileName)
+	ait.CreateSquashFSFromFolder(path, outFileName)
 
 	ait.AppendToFile(outFileName, fileName)
 	hash := ait.CalculateMD5(fileName)
@@ -70,7 +66,7 @@ func createAppImage(path string, appImageEngine string) {
 	ait.MakeExecutable(fileName)
 	hash = ait.CalculateSha256(fileName)
 
-	err = os.Remove(outFileName)
+	err := os.Remove(outFileName)
 	ait.Check(err)
 
 	fmt.Printf("Created %s\n", fileName)
@@ -106,6 +102,8 @@ func main() {
 	if appImageEngine == "" {
 		appImageEngine = ait.DownloadAppImageEngine(ARCH_x86_64)
 	}
+	appImageEngine, err := filepath.Abs(appImageEngine)
+	ait.Check(err)
 
 	for i := range cliArgs {
 		createAppImage(cliArgs[i], appImageEngine)

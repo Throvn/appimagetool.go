@@ -76,7 +76,7 @@ func CalculateMD5(path string) []byte {
 			continue
 		}
 
-		fmt.Printf("Section %d name: %s\n", i, name)
+		// fmt.Printf("Section %d name: %s\n", i, name)
 		content, err := elf.GetSectionContent(i)
 		Check(err)
 		hash.Write(content)

@@ -31,10 +31,12 @@ func DirSize(path string) (int64, error) {
 func AppendToFile(src string, dest string) {
 	srcFile, err := os.Open(src)
 	Check(err)
+	defer srcFile.Sync()
 	defer srcFile.Close()
 
 	destFile, err := os.OpenFile(dest, os.O_WRONLY|os.O_APPEND, 0666)
 	Check(err)
+	defer destFile.Sync()
 	defer destFile.Close()
 
 	_, err = io.Copy(destFile, srcFile)
