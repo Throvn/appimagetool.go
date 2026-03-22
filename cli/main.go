@@ -74,7 +74,7 @@ func createAppImage(path string, appImageEngine string) {
 
 func main() {
 	arch := flag.String("arch", "x86_64", "System Architecture on which the AppImage should run. Valid values are: x86_64, aarch64, i686, armhf")
-	runtimePath := flag.String("runtime-file", "", "(Optional) Path of AppImage runtime which is embedded in the AppImage")
+	runtimePath := flag.String("runtime-file", "", "(Optional) Path of AppImage runtime which is copied into in the AppImage")
 	privKeyPath := flag.String("sign-key", "", "(Optional) Path of PGP private key file to sign the AppImage")
 	passphrase := flag.String("passphrase", "", "(Optional) Passphrase of encrypted PGP key file. Only use if encrypted.")
 	flag.Parse()
