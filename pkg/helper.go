@@ -1,6 +1,7 @@
 package appimagetoolgo
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -41,4 +42,35 @@ func AppendToFile(src string, dest string) {
 
 	_, err = io.Copy(destFile, srcFile)
 	Check(err)
+}
+
+func OverwriteSection(path string, section string, content []byte) error {
+	header, err := getSectionHeaderByName(path, section)
+	if err != nil {
+		return err
+	}
+
+	if size := header.GetSize(); size < uint64(len(content)) {
+		return fmt.Errorf("%s section has length %d instead of %d", section, size, len(content))
+	}
+	offset := header.GetFileOffset()
+
+	file, err := os.OpenFile(path, os.O_RDWR, 0)
+	if err != nil {
+		return err
+	}
+	defer file.Sync()
+	defer file.Close()
+
+	bytesWritten, err := file.WriteAt(content, int64(offset))
+	if err != nil {
+		return err
+	}
+
+	if bytesWritten != len(content) {
+		return fmt.Errorf("%s was not correctly written", section)
+	}
+
+	return nil
+
 }

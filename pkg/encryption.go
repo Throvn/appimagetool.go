@@ -32,3 +32,13 @@ func SignSha256(hash []byte, pgp PGPMaterial) ([]byte, error) {
 	rawSignedMsg, err := crypto.NewClearTextMessageFromArmored(signedMsg)
 	return rawSignedMsg.GetBinarySignature(), err
 }
+
+func UpdateSigKey(path string, pgp PGPMaterial) error {
+	privateKeyObj, err := crypto.NewKeyFromArmored(pgp.PrivateKeyArmored)
+	if err != nil {
+		return err
+	}
+
+	publicKey, err := privateKeyObj.GetPublicKey()
+	return OverwriteSection(path, ".sig_key", publicKey)
+}

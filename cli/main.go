@@ -4,8 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"os/user"
 	"path/filepath"
+	"strings"
 
 	ait "github.com/Throvn/appimagetool.go"
 )
@@ -39,11 +39,10 @@ func main() {
 		if flag.NArg() != 2 {
 			ait.Check(fmt.Errorf("command malformed: use appimagetool.go mkdir email@example.com"))
 		}
-		// TODO: Generate new key and write it to cwd.
-		currUser, err := user.Current()
-		ait.Check(err)
+		email := flag.Arg(1)
+		emailLocalPart := strings.SplitN(email, "@", 1)[0]
 
-		secretKey, publicKey, err := ait.GenerateSigningKey(currUser.Username+" - AppImageTool.go", flag.Arg(1), *passphrase)
+		secretKey, publicKey, err := ait.GenerateSigningKey(emailLocalPart+" - AppImageTool.go", email, *passphrase)
 		ait.Check(err)
 
 		err = os.WriteFile("private.asc", []byte(secretKey), 0o400)

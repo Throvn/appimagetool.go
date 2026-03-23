@@ -59,6 +59,8 @@ func CreateAppImage(path string, appImageEngine string, pgp PGPMaterial) {
 		Check(err)
 		err = UpdateSha256(fileName, signedHash)
 		Check(err)
+		err = UpdateSigKey(fileName, pgp)
+		Check(err)
 	}
 
 	// Cleanup temp files

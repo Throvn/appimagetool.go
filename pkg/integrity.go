@@ -122,39 +122,8 @@ func CalculateMD5(path string) []byte {
 	return finalHash
 }
 
-func overwriteSection(path string, section string, content []byte) error {
-	header, err := getSectionHeaderByName(path, section)
-	if err != nil {
-		return err
-	}
-
-	if size := header.GetSize(); size < uint64(len(content)) {
-		return fmt.Errorf("%s section has length %d instead of %d", section, size, len(content))
-	}
-	offset := header.GetFileOffset()
-
-	file, err := os.OpenFile(path, os.O_RDWR, 0)
-	if err != nil {
-		return err
-	}
-	defer file.Sync()
-	defer file.Close()
-
-	bytesWritten, err := file.WriteAt(content, int64(offset))
-	if err != nil {
-		return err
-	}
-
-	if bytesWritten != len(content) {
-		return fmt.Errorf("%s was not correctly written", section)
-	}
-
-	return nil
-
-}
-
 func UpdateMD5(path string, hash []byte) error {
-	return overwriteSection(path, ".digest_md5", hash)
+	return OverwriteSection(path, ".digest_md5", hash)
 }
 
 func CalculateSha256(path string) []byte {
@@ -180,6 +149,5 @@ func CalculateSha256(path string) []byte {
 }
 
 func UpdateSha256(path string, hash []byte) error {
-	fmt.Println("Hash", hash)
-	return overwriteSection(path, ".sha256_sig", hash)
+	return OverwriteSection(path, ".sha256_sig", hash)
 }
