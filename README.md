@@ -17,13 +17,13 @@ This implementation however should already be enough to create a valid [App Imag
 
 ```
 Usage of appimagetool [<folder>.AppDir, ...]:
-  --arch string
+  -arch string
         System Architecture on which the AppImage should run. Valid values are: x86_64, aarch64, i686, armhf (default "x86_64")
-  --passphrase string
+  -passphrase string
         (Optional) Passphrase of encrypted PGP key file. Only use if encrypted.
-  --runtime-file string
+  -runtime-file string
         (Optional) Path of AppImage runtime which is copied into in the AppImage
-  --sign-key string
+  -sign-key string
         (Optional) Path of PGP private key file to sign the AppImage
 ```
 

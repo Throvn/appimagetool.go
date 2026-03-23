@@ -28,10 +28,10 @@ func checkArch(arch *string) error {
 
 func main() {
 	// Args for default (mkappdir) command
-	arch := flag.String("-arch", "x86_64", "System Architecture on which the AppImage should run. Valid values are: x86_64, aarch64, i686, armhf")
-	runtimePath := flag.String("-runtime-file", "", "(Optional) Path of AppImage runtime which is copied into in the AppImage")
-	privKeyPath := flag.String("-sign-key", "", "(Optional) Path of PGP key file (.asc) to sign the AppImage")
-	passphrase := flag.String("-passphrase", "", "(Optional) Passphrase of encrypted PGP key file. Only use if encrypted.")
+	arch := flag.String("arch", "x86_64", "System Architecture on which the AppImage should run. Valid values are: x86_64, aarch64, i686, armhf")
+	runtimePath := flag.String("runtime-file", "", "(Optional) Path of AppImage runtime which is copied into in the AppImage")
+	privKeyPath := flag.String("sign-key", "", "(Optional) Path of PGP key file (.asc) to sign the AppImage")
+	passphrase := flag.String("passphrase", "", "(Optional) Passphrase of encrypted PGP key file. Only use if encrypted.")
 
 	flag.Parse()
 
@@ -80,12 +80,19 @@ func main() {
 	appImageEngine, err := filepath.Abs(appImageEngine)
 	ait.Check(err)
 
-	for i := range cliArgs {
-		ait.CreateAppImage(cliArgs[i], appImageEngine)
+	// Only if -sign-key is supplied, load the file into memory.
+	var privKeyArmored []byte
+	if *privKeyPath != "" {
+		privKeyArmored, err = os.ReadFile(*privKeyPath)
+		ait.Check(err)
 	}
 
-	// privateKey, err := ait.GeneratePGPPrivateKey("This")
-	// fmt.Println(privateKey)
-	// signedHash := ait.SignSha256(hash, privateKey, "This")
-	// ait.UpdateSha256(fileName, signedHash)
+	for i := range cliArgs {
+		key := ait.PGPMaterial{
+			Passphrase:        *passphrase,
+			PrivateKeyArmored: string(privKeyArmored),
+		}
+		ait.CreateAppImage(cliArgs[i], appImageEngine, key)
+	}
+
 }

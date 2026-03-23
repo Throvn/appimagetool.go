@@ -8,6 +8,11 @@ import (
 	"strings"
 )
 
+type PGPMaterial struct {
+	Passphrase        string
+	PrivateKeyArmored string
+}
+
 // Taken from https://stackoverflow.com/a/28371044/10408987
 func copyFile(src string, dst string) {
 	// Read all content of src to data, may cause OOM for a large file.
@@ -30,16 +35,17 @@ func safeFileBase(path string) string {
 	return filepath.Join(dir, file)
 }
 
-func CreateAppImage(path string, appImageEngine string) {
+func CreateAppImage(path string, appImageEngine string, pgp PGPMaterial) {
 	fileName := safeFileBase(path) + ".AppImage"
 
 	copyFile(appImageEngine, fileName)
 
+	// (re)create squashfs from folder structure
 	outFileName := safeFileBase(path) + ".squashfs"
-
 	os.Remove(outFileName)
 	CreateSquashFSFromFolder(path, outFileName)
 
+	// Add file integrity check
 	AppendToFile(outFileName, fileName)
 	hash := CalculateMD5(fileName)
 	UpdateMD5(fileName, hash)
@@ -47,9 +53,17 @@ func CreateAppImage(path string, appImageEngine string) {
 	MakeExecutable(fileName)
 	hash = CalculateSha256(fileName)
 
+	// Add distribution integrity check
+	if pgp.PrivateKeyArmored != "" {
+		signedHash, err := SignSha256(hash, pgp)
+		Check(err)
+		err = UpdateSha256(fileName, signedHash)
+		Check(err)
+	}
+
+	// Cleanup temp files
 	err := os.Remove(outFileName)
 	Check(err)
-
 	os.Remove(appImageEngine)
 	Check(err)
 

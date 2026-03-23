@@ -22,7 +22,13 @@ func GenerateSigningKey(name string, email string, passphrase string) (secretKey
 	return privateKey, publicKey, err
 }
 
-func SignSha256(hash []byte, privateKey string, passphrase string) (string, error) {
+func SignSha256(hash []byte, pgp PGPMaterial) ([]byte, error) {
 	hexlifiedHash := hex.EncodeToString(hash)
-	return helper.SignCleartextMessageArmored(privateKey, []byte(passphrase), hexlifiedHash)
+	signedMsg, err := helper.SignCleartextMessageArmored(pgp.PrivateKeyArmored, []byte(pgp.Passphrase), hexlifiedHash)
+	if err != nil {
+		return nil, err
+	}
+
+	rawSignedMsg, err := crypto.NewClearTextMessageFromArmored(signedMsg)
+	return rawSignedMsg.GetBinarySignature(), err
 }

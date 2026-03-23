@@ -180,5 +180,6 @@ func CalculateSha256(path string) []byte {
 }
 
 func UpdateSha256(path string, hash []byte) error {
+	fmt.Println("Hash", hash)
 	return overwriteSection(path, ".sha256_sig", hash)
 }
