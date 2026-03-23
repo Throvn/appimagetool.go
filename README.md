@@ -11,7 +11,7 @@ This is going to be used in the Desktop.js CLI to allow for cross platform bundl
 - [ ] Check downloaded appimage engine against the supplied (hardcoded) public key, to verify integrity
 - [x] Embed md5 integrity check
 - [ ] Implement .upd_info to allow for incremental updates using zsync
-- [ ] WIP: Implement signing using pgp keys
+- [x] UNTESTED: Implement signing using pgp keys
 
 This implementation however should already be enough to create a valid [App Image Type 2 Format](https://github.com/AppImage/AppImageSpec/blob/master/draft.md).
 
@@ -29,7 +29,7 @@ Usage of appimagetool [<folder>.AppDir, ...]:
 
 As a convenience method, there also exists a command which lets you create a pgp key pair.
 The command is `mkkey` and as an argument it takes the email which is encoded into the key pair.
-As the certificate name, the currently logged in system user is taken (It really is just a convenience method).
+As the certificate name, the local part of the email is taken (everything before the @).
 
 ```shell
 appimagetool mkkey email@example.com [--passphrase]
