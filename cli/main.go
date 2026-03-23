@@ -1,12 +1,11 @@
 package main
 
 import (
-	"encoding/hex"
 	"flag"
 	"fmt"
 	"os"
+	"os/user"
 	"path/filepath"
-	"strings"
 
 	ait "github.com/Throvn/appimagetool.go"
 )
@@ -27,57 +26,30 @@ func checkArch(arch *string) error {
 	return fmt.Errorf("[flags] System architecture %s is unknown", *arch)
 }
 
-// Taken from https://stackoverflow.com/a/28371044/10408987
-func copyFile(src string, dst string) {
-	// Read all content of src to data, may cause OOM for a large file.
-	data, err := os.ReadFile(src)
-	ait.Check(err)
-	// Write data to dst
-	err = os.WriteFile(dst, data, 0644)
-	ait.Check(err)
-}
-
-func safeFileBase(path string) string {
-	dir, file := filepath.Split(path)
-
-	// Remove file extension, if exists.
-	fileParts := strings.Split(file, ".")
-	if len(fileParts) > 1 {
-		file = strings.Join(fileParts[:len(fileParts)-1], ".")
-	}
-
-	return filepath.Join(dir, file)
-}
-
-func createAppImage(path string, appImageEngine string) {
-	fileName := safeFileBase(path) + ".AppImage"
-
-	copyFile(appImageEngine, fileName)
-
-	outFileName := safeFileBase(path) + ".squashfs"
-
-	os.Remove(outFileName)
-	ait.CreateSquashFSFromFolder(path, outFileName)
-
-	ait.AppendToFile(outFileName, fileName)
-	hash := ait.CalculateMD5(fileName)
-	ait.UpdateMD5(fileName, hash)
-	fmt.Println(hex.EncodeToString(hash))
-	ait.MakeExecutable(fileName)
-	hash = ait.CalculateSha256(fileName)
-
-	err := os.Remove(outFileName)
-	ait.Check(err)
-
-	fmt.Printf("Created %s\n", fileName)
-}
-
 func main() {
+	// Args for default (mkappdir) command
 	arch := flag.String("arch", "x86_64", "System Architecture on which the AppImage should run. Valid values are: x86_64, aarch64, i686, armhf")
 	runtimePath := flag.String("runtime-file", "", "(Optional) Path of AppImage runtime which is copied into in the AppImage")
-	privKeyPath := flag.String("sign-key", "", "(Optional) Path of PGP private key file to sign the AppImage")
+	privKeyPath := flag.String("sign-key", "", "(Optional) Path of PGP key file (.asc) to sign the AppImage")
 	passphrase := flag.String("passphrase", "", "(Optional) Passphrase of encrypted PGP key file. Only use if encrypted.")
+
 	flag.Parse()
+
+	if flag.NArg() > 0 && flag.Arg(0) == "mkkey" {
+		if flag.NArg() != 2 {
+			ait.Check(fmt.Errorf("command malformed: use appimagetool.go mkdir email@example.com"))
+		}
+		// TODO: Generate new key and write it to cwd.
+		currUser, err := user.Current()
+		ait.Check(err)
+
+		key, err := ait.GenerateSigningKey(currUser.Username, flag.Arg(1), *passphrase)
+		ait.Check(err)
+
+		os.WriteFile("private.asc", []byte(key), 0o400)
+
+		return
+	}
 
 	if err := checkArch(arch); err != nil {
 		if *runtimePath == "" {
@@ -106,7 +78,7 @@ func main() {
 	ait.Check(err)
 
 	for i := range cliArgs {
-		createAppImage(cliArgs[i], appImageEngine)
+		ait.CreateAppImage(cliArgs[i], appImageEngine)
 	}
 
 	// privateKey, err := ait.GeneratePGPPrivateKey("This")
