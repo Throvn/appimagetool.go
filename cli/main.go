@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	ait "github.com/Throvn/appimagetool.go"
+	ait "github.com/Throvn/goappimagetool"
 )
 
 const (
@@ -37,12 +37,12 @@ func main() {
 
 	if flag.NArg() > 0 && flag.Arg(0) == "mkkey" {
 		if flag.NArg() != 2 {
-			ait.Check(fmt.Errorf("command malformed: use appimagetool.go mkdir email@example.com"))
+			ait.Check(fmt.Errorf("command malformed: use goappimagetool mkdir email@example.com"))
 		}
 		email := flag.Arg(1)
 		emailLocalPart := strings.SplitN(email, "@", 1)[0]
 
-		secretKey, publicKey, err := ait.GenerateSigningKey(emailLocalPart+" - AppImageTool.go", email, *passphrase)
+		secretKey, publicKey, err := ait.GenerateSigningKey(emailLocalPart+" - goAppImageTool", email, *passphrase)
 		ait.Check(err)
 
 		err = os.WriteFile("private.asc", []byte(secretKey), 0o400)

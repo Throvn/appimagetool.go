@@ -1,10 +1,10 @@
-module github.com/Throvn/appimagetool.go/cli
+module github.com/Throvn/goappimagetool/cli
 
 go 1.25.7
 
-replace github.com/Throvn/appimagetool.go => ../pkg
+replace github.com/Throvn/goappimagetool => ../pkg
 
-require github.com/Throvn/appimagetool.go v0.1.0
+require github.com/Throvn/goappimagetool v0.1.0
 
 require (
 	github.com/ProtonMail/go-crypto v1.4.1 // indirect

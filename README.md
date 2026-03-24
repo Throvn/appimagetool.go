@@ -1,4 +1,4 @@
-# AppImageTool.go
+# goAppImageTool
 
 A stripped down version of [the original appimagetool](https://github.com/AppImage/appimagetool) written in go.
 
