@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	ait "github.com/Throvn/goappimagetool"
+	ait "github.com/Throvn/goappimagetool/pkg/tool"
 )
 
 const (
