@@ -2,7 +2,7 @@ module github.com/Throvn/goappimagetool/cli
 
 go 1.25.7
 
-replace github.com/Throvn/goappimagetool => ../pkg
+// replace github.com/Throvn/goappimagetool => ../pkg
 
 require github.com/Throvn/goappimagetool v0.1.0
 
