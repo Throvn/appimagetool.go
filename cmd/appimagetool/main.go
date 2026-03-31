@@ -86,11 +86,18 @@ func main() {
 		ait.Check(err)
 	}
 
-	for i := range cliArgs {
-		key := ait.PGPMaterial{
+	// Initialize `key` only if private key exists.
+	// Otherwise supply nil.
+	var key *ait.PGPMaterial = nil
+	if len(privKeyArmored) > 0 {
+		key = &ait.PGPMaterial{
 			Passphrase:        *passphrase,
 			PrivateKeyArmored: string(privKeyArmored),
 		}
+	}
+
+	// Create an AppImage for each supplied AppDir.
+	for i := range cliArgs {
 		ait.CreateAppImage(cliArgs[i], appImageEngine, key)
 	}
 

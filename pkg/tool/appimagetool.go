@@ -42,7 +42,7 @@ func safeFileBase(path string) string {
 // appImageEnginePath = file of the AppImage engine. Use `DownloadAppImageEngine` function if you don't have an AppImage Engine ready yet.
 //
 // pgp = The pgp key to sign the AppImage. It's optional. If you don't want to sign your AppImage, supply an empty struct.
-func CreateAppImage(appDirPath string, appImageEnginePath string, pgp PGPMaterial) {
+func CreateAppImage(appDirPath string, appImageEnginePath string, pgp *PGPMaterial) {
 	fileName := safeFileBase(appDirPath) + ".AppImage"
 
 	copyFile(appImageEnginePath, fileName)
@@ -61,12 +61,12 @@ func CreateAppImage(appDirPath string, appImageEnginePath string, pgp PGPMateria
 	hash = CalculateSha256(fileName)
 
 	// Add distribution integrity check
-	if pgp.PrivateKeyArmored != "" {
-		signedHash, err := SignSha256(hash, pgp)
+	if pgp != nil {
+		signedHash, err := SignSha256(hash, *pgp)
 		Check(err)
 		err = UpdateSha256(fileName, signedHash)
 		Check(err)
-		err = UpdateSigKey(fileName, pgp)
+		err = UpdateSigKey(fileName, *pgp)
 		Check(err)
 	}
 
